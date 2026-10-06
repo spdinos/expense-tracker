@@ -1,0 +1,14 @@
+.Renviron
+.Rhistory
+.RData
+.Rproj.user/
+
+# Local databases
+Financial_budget
+*.sqlite
+*.sqlite3
+*.db
+
+# Temporary files
+*.log
+*.tmp

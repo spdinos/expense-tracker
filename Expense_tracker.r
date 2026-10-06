@@ -1,0 +1,43 @@
+packages <- c(
+  "shiny", "DT", "RSQLite", "dplyr", "data.table", "lubridate", "shinyjs",
+  "tidyr", "shinyWidgets", "reactable", "htmlwidgets", "bslib",
+  "shinydashboard", "shinyjs", "plotly", "ggplot2", "ggrepel", "ggtext", "jsonlite", "rlang", "RPostgres"
+)
+
+# Load each package
+invisible(lapply(packages, library, character.only = TRUE))
+
+path <- "C:/path/test_scripts/Expense tracker cloud"
+
+setwd(path)
+source((paste(path, "formulas/formula.r", sep = "/")))
+
+result <- get_data()
+
+expenses <- as.data.table(result$Expenses)
+budget <- as.data.table(result$Budget)
+dropdown <- as.data.table(result$Dropdown)
+bank <- as.data.table(result$Bank)
+income <- as.data.table(result$Income)
+monthly_summary <- as.data.table(result$Monthly_summary)
+savings_outcome <- as.data.table(result$Savings_outcome)
+
+source((paste(path, "modules/filters/mod_filters_ui.r", sep = "/")))
+source((paste(path, "modules/filters/mod_filters_server.r", sep = "/")))
+source((paste(path, "modules/main/mod_main_ui.r", sep = "/")))
+source((paste(path, "modules/main/mod_main_server.r", sep = "/")))
+source((paste(path, "modules/drop_down/mod_drp_ui.r", sep = "/")))
+source((paste(path, "modules/drop_down/mod_drp_server.r", sep = "/")))
+source((paste(path, "modules/expenses/mod_exp_ui.r", sep = "/")))
+source((paste(path, "modules/expenses/mod_exp_server.r", sep = "/")))
+source((paste(path, "modules/income/mod_inc_ui.r", sep = "/")))
+source((paste(path, "modules/income/mod_inc_server.r", sep = "/")))
+source((paste(path, "modules/bank/mod_bank_ui.r", sep = "/")))
+source((paste(path, "modules/bank/mod_bank_server.r", sep = "/")))
+source((paste(path, "modules/budget/mod_budget_ui.r", sep = "/")))
+source((paste(path, "modules/budget/mod_budget_server.r", sep = "/")))
+
+source((paste(path, "ui.r", sep = "/")))
+source((paste(path, "server.r", sep = "/")))
+
+shiny::runApp(".", launch.browser = TRUE)
