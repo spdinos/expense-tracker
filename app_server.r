@@ -2,7 +2,7 @@ server <- function(input, output, session) {
 # --- project management server code ---
     expense_df <- reactiveVal(expenses)
     income_df <- reactiveVal(income)
-    drop_down_df <- reactiveVal(dropdown)
+    drop_down_df <- reactiveVal(dropdown_df)
     budget_df <- reactiveVal(budget)
     bank_df <- reactiveVal(bank)
     monthly_df <- reactiveVal(monthly_summary)
@@ -151,14 +151,14 @@ mod_exp_server(
 "expenses",
 expense_df,
 filtered_expense,
-dropdown
+dropdown_df
 )
 
 mod_inc_server(
 "income",
 income_df,
 filtered_income,
-dropdown
+dropdown_df
 )
 
 mod_bank_server(
@@ -188,7 +188,7 @@ filtered_budget
     result <- get_data()
     expenses <- as.data.table(result$Expenses)
     budget <- as.data.table(result$Budget)
-    dropdown <- as.data.table(result$Dropdown)
+    dropdown_df <- as.data.table(result$Dropdown)
     bank <- as.data.table(result$Bank)
     income <- as.data.table(result$Income)
     monthly_summary <- as.data.table(result$Monthly_summary)
@@ -196,7 +196,7 @@ filtered_budget
     # 3. Replace master and display datasets directly
     expense_df(expenses)
     income_df(income)
-    drop_down_df(dropdown)
+    drop_down_df(dropdown_df)
     budget_df(budget)
     bank_df(bank)
     monthly_df(monthly_summary)

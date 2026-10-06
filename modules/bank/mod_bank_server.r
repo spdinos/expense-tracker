@@ -55,7 +55,7 @@ output$sec_cat_ui <- renderUI({
 observeEvent(input$modal_prim_cat, {
   req(input$modal_prim_cat)
 
-  filtered_prt <- dropdown[dropdown$`Primary Category` == input$modal_prim_cat, ]
+  filtered_prt <- dropdown_df[dropdown_df$`Primary Category` == input$modal_prim_cat, ]
   filtered_dropdown <- filtered_prt$`Secondary Category`
   filtered_dropdown <- filtered_dropdown[!is.na(filtered_dropdown) & filtered_dropdown != ""]
 
@@ -525,7 +525,7 @@ last_selected_row(selected_id)
       secondary_val <- selected_row[["Secondary Category"]]
 
  if (!is.null(primary_val) && secondary_val != "") {
-  filtered_prt <- dropdown[dropdown$`Primary Category` == primary_val, ]
+  filtered_prt <- dropdown_df[dropdown_df$`Primary Category` == primary_val, ]
   filtered_categories <- filtered_prt$`Secondary Category`
   filtered_categories <- filtered_categories[!is.na(filtered_categories) & filtered_categories != ""]
 

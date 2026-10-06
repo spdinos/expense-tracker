@@ -1,4 +1,4 @@
-mod_exp_ui <- function(id, dropdown) {
+mod_exp_ui <- function(id, dropdown_df) {
 ns <- NS(id)
 tagList(
   tags$style(HTML("
@@ -29,7 +29,7 @@ tagList(
   ")),
 fluidRow(
       column(2, airDatepickerInput(ns("modal_date"), "Date", value = NULL, multiple = FALSE, todayButton = TRUE)),
-      column(2, selectizeInput(ns("modal_prim_cat"), "Primary Category", choices = c("", sort(unique(dropdown$`Primary Category`))), selected = NULL, multiple = FALSE, options = list(create = TRUE))),
+      column(2, selectizeInput(ns("modal_prim_cat"), "Primary Category", choices = c("", sort(unique(dropdown_df$`Primary Category`))), selected = NULL, multiple = FALSE, options = list(create = TRUE))),
       column(2, uiOutput(ns("sec_cat_ui"))),
       column(2, numericInput(ns("modal_expense"), "Expense", value = "", min = 0)),
       column(2, selectInput(ns("action_selector"), "Choose Action:",

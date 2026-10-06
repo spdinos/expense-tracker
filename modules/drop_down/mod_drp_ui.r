@@ -1,4 +1,4 @@
-mod_drp_ui <- function(id, dropdown) {
+mod_drp_ui <- function(id, dropdown_df) {
 ns <- NS(id)
 tagList(
   tags$style(HTML("
@@ -32,8 +32,8 @@ tagList(
 fluidRow(
   column(12,
     div(style = "display: flex; align-items: flex-end; gap: 10px;",
-      column(4, selectizeInput(ns("prim_cat"), "Primary Category", choices = c("", sort(unique(dropdown$`Primary Category`))), selected = NULL, multiple = FALSE, options = list(create = TRUE))),
-      column(4, selectizeInput(ns("sec_cat"), "Secondary Category", choices = c("", sort(unique(dropdown$`Secondary Category`))), selected = NULL, multiple = FALSE, options = list(create = TRUE))),
+      column(4, selectizeInput(ns("prim_cat"), "Primary Category", choices = c("", sort(unique(dropdown_df$`Primary Category`))), selected = NULL, multiple = FALSE, options = list(create = TRUE))),
+      column(4, selectizeInput(ns("sec_cat"), "Secondary Category", choices = c("", sort(unique(dropdown_df$`Secondary Category`))), selected = NULL, multiple = FALSE, options = list(create = TRUE))),
       div(style = "flex: 1;", selectInput(ns("action_selector"), "Choose Action:",
         choices = c("", "Add new row", "Delete rows", "Change info", "Save"),
         selected = NULL

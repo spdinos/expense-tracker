@@ -1,6 +1,3 @@
-library(shiny)
-library(shinydashboard)
-
 ui <- dashboardPage(skin = "green",
         dashboardHeader(
           title = div("Financial Management", style = "color: Yellow; font-weight: bold; font-size: 16px; padding: 5px 15px; border-radius: 5px;"),
@@ -44,10 +41,10 @@ ui <- dashboardPage(skin = "green",
             mod_main_ui("main")
             ),
             tabItem(tabName = "drop_down_tab",
-            mod_drp_ui("drop_down", dropdown)
+            mod_drp_ui("drop_down", dropdown_df)
             ),
             tabItem(tabName = "expenses_tab",
-            mod_exp_ui("expenses", dropdown)
+            mod_exp_ui("expenses", dropdown_df)
             ),
             tabItem(tabName = "income_tab",
             mod_inc_ui("income")
