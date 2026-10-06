@@ -53,7 +53,7 @@ output$total_budget <- renderValueBox({
 })
 
 expense_vs_budget <- reactive({
-  
+  req(input$theme)
   if(input$theme == "Date / Primary Category") {
 
   group_cols <- c("Date", "Primary Category")
