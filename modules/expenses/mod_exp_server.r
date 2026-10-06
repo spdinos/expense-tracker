@@ -1,4 +1,4 @@
-mod_exp_server <- function(id, request_input, filtered_df, dropdown) {
+mod_exp_server <- function(id, request_input, filtered_df, dropdown_df) {
   moduleServer(id, function(input, output, session) {
   ns <- NS(id)
 
