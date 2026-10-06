@@ -1,11 +1,22 @@
-packages <- c(
-  "shiny", "DT", "RSQLite", "dplyr", "data.table", "lubridate", "shinyjs",
-  "tidyr", "shinyWidgets", "reactable", "htmlwidgets", "bslib",
-  "shinydashboard", "shinyjs", "plotly", "ggplot2", "ggrepel", "ggtext", "jsonlite", "rlang", "RPostgres"
-)
-
-# Load each package
-invisible(lapply(packages, library, character.only = TRUE))
+library(shiny)
+library(DT)
+library(RPostgres)
+library(dplyr)
+library(data.table)
+library(lubridate)
+library(shinyjs)
+library(tidyr)
+library(shinyWidgets)
+library(reactable)
+library(htmlwidgets)
+library(bslib)
+library(shinydashboard)
+library(plotly)
+library(ggplot2)
+library(ggrepel)
+library(ggtext)
+library(jsonlite)
+library(rlang)
 
 path <- "C:/path/test_scripts/Expense tracker cloud"
 
