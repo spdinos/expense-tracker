@@ -99,3 +99,8 @@ source("modules/budget/mod_budget_server.r")
 
 source("ui.r")
 source("server.r")
+
+shinyApp(
+  ui = ui,
+  server = server
+)
