@@ -18,10 +18,7 @@ library(ggtext)
 library(jsonlite)
 library(rlang)
 
-path <- "C:/path/test_scripts/Expense tracker cloud"
-
-setwd(path)
-source((paste(path, "formulas/formula.r", sep = "/")))
+source("formulas/formula.r")
 
 result <- get_data()
 
@@ -33,22 +30,72 @@ income <- as.data.table(result$Income)
 monthly_summary <- as.data.table(result$Monthly_summary)
 savings_outcome <- as.data.table(result$Savings_outcome)
 
-source((paste(path, "modules/filters/mod_filters_ui.r", sep = "/")))
-source((paste(path, "modules/filters/mod_filters_server.r", sep = "/")))
-source((paste(path, "modules/main/mod_main_ui.r", sep = "/")))
-source((paste(path, "modules/main/mod_main_server.r", sep = "/")))
-source((paste(path, "modules/drop_down/mod_drp_ui.r", sep = "/")))
-source((paste(path, "modules/drop_down/mod_drp_server.r", sep = "/")))
-source((paste(path, "modules/expenses/mod_exp_ui.r", sep = "/")))
-source((paste(path, "modules/expenses/mod_exp_server.r", sep = "/")))
-source((paste(path, "modules/income/mod_inc_ui.r", sep = "/")))
-source((paste(path, "modules/income/mod_inc_server.r", sep = "/")))
-source((paste(path, "modules/bank/mod_bank_ui.r", sep = "/")))
-source((paste(path, "modules/bank/mod_bank_server.r", sep = "/")))
-source((paste(path, "modules/budget/mod_budget_ui.r", sep = "/")))
-source((paste(path, "modules/budget/mod_budget_server.r", sep = "/")))
+# =========================
+# FORMULAS
+# =========================
 
-source((paste(path, "ui.r", sep = "/")))
-source((paste(path, "server.r", sep = "/")))
+source("formulas/formula.r")
 
-shiny::runApp(".", launch.browser = TRUE)
+
+# =========================
+# FILTER MODULE
+# =========================
+
+source("modules/filters/mod_filters_ui.r")
+source("modules/filters/mod_filters_server.r")
+
+
+# =========================
+# MAIN MODULE
+# =========================
+
+source("modules/main/mod_main_ui.r")
+source("modules/main/mod_main_server.r")
+
+
+# =========================
+# DROP DOWN MODULE
+# =========================
+
+source("modules/drop_down/mod_drp_ui.r")
+source("modules/drop_down/mod_drp_server.r")
+
+
+# =========================
+# EXPENSES MODULE
+# =========================
+
+source("modules/expenses/mod_exp_ui.r")
+source("modules/expenses/mod_exp_server.r")
+
+
+# =========================
+# INCOME MODULE
+# =========================
+
+source("modules/income/mod_inc_ui.r")
+source("modules/income/mod_inc_server.r")
+
+
+# =========================
+# BANK MODULE
+# =========================
+
+source("modules/bank/mod_bank_ui.r")
+source("modules/bank/mod_bank_server.r")
+
+
+# =========================
+# BUDGET MODULE
+# =========================
+
+source("modules/budget/mod_budget_ui.r")
+source("modules/budget/mod_budget_server.r")
+
+
+# =========================
+# UI / SERVER
+# =========================
+
+source("ui.r")
+source("server.r")
