@@ -27,6 +27,7 @@ dashboardSidebar(
   sidebarMenu(
 
     id = "tabs",
+    selected = "main_tab",
 
     menuItem(
       "Main",
@@ -65,47 +66,9 @@ dashboardSidebar(
     )
   ),
 
-  # =========================
-  # FILTERS
-  # =========================
-
-  div(
+ div(
     class = "sidebar-filters",
-
-    conditionalPanel(
-      condition =
-        "input.tabs == 'bank_tab' || input.tabs == 'expenses_tab'",
-
-      mod_filters_ui("filters_expense")
-    ),
-
-    conditionalPanel(
-      condition =
-        "input.tabs == 'income_tab'",
-
-      mod_filters_ui("filters_income")
-    ),
-
-    conditionalPanel(
-      condition =
-        "input.tabs == 'budget_tab'",
-
-      mod_filters_ui("filters_budget")
-    ),
-
-    conditionalPanel(
-      condition =
-        "input.tabs == 'drop_down_tab'",
-
-      mod_filters_ui("filters_dropdown")
-    ),
-
-    conditionalPanel(
-      condition =
-        "input.tabs == 'main_tab'",
-
-      mod_filters_ui("filters_summary")
-    )
+    uiOutput("sidebar_filters")
   )
 ),
 
@@ -162,10 +125,98 @@ dashboardSidebar(
 }
 
 
-ui <- fluidPage(
+ui <- tagList(
 
   useShinyjs(),
 
-  uiOutput("app_content")
+  # =========================
+  # DASHBOARD
+  # =========================
 
+  div(
+    id = "dashboard_container",
+    style = "display: none;",
+
+    main_dashboard_ui()
+  ),
+
+  # =========================
+  # LOGIN
+  # =========================
+
+  div(
+    id = "login_container",
+
+    tags$head(
+      tags$style(
+        HTML("
+          body {
+            background-color: #f5f5f5;
+          }
+
+          .login-container {
+            width: calc(100% - 30px);
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            background: white;
+          }
+
+          .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+
+          .login-button {
+            width: 100%;
+          }
+
+          .login-error {
+            color: #d9534f;
+            text-align: center;
+            margin-top: 15px;
+          }
+
+          @media (max-width: 767px) {
+
+            .login-container {
+              width: calc(100% - 20px);
+              margin: 30px auto;
+              padding: 20px;
+            }
+
+          }
+        ")
+      )
+    ),
+
+    div(
+      class = "login-container",
+
+      h2(
+        "Financial Management",
+        class = "login-title"
+      ),
+
+      textInput(
+        "login_username",
+        "Username"
+      ),
+
+      passwordInput(
+        "login_password",
+        "Password"
+      ),
+
+      actionButton(
+        "login_button",
+        "Login",
+        class = "btn-primary login-button"
+      ),
+
+      uiOutput("login_error")
+    )
+  )
 )

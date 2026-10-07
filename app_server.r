@@ -12,114 +12,77 @@ server <- function(input, output, session) {
   # LOGIN / APP UI
   # =========================
 
-  output$app_content <- renderUI({
 
-    if (!authenticated()) {
+output$login_error <- renderUI({
 
-      fluidPage(
+  req(login_failed())
 
-        tags$head(
-          tags$style(
-            HTML("
-              body {
-                background-color: #f5f5f5;
-              }
+  div(
+    class = "login-error",
+    "Incorrect username or password."
+  )
 
-              .login-container {
-                max-width: 400px;
-                margin: 100px auto;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-                background: white;
-              }
-
-              .login-title {
-                text-align: center;
-                margin-bottom: 30px;
-              }
-
-              .login-button {
-                width: 100%;
-              }
-
-              .login-error {
-                color: #d9534f;
-                text-align: center;
-                margin-top: 15px;
-              }
-            ")
-          )
-        ),
-
-        div(
-          class = "login-container",
-
-          h2(
-            "Financial Management",
-            class = "login-title"
-          ),
-
-          textInput(
-            "login_username",
-            "Username"
-          ),
-
-          passwordInput(
-            "login_password",
-            "Password"
-          ),
-
-          actionButton(
-            "login_button",
-            "Login",
-            class = "btn-primary login-button"
-          ),
-
-          if (login_failed()) {
-            div(
-              class = "login-error",
-              "Incorrect username or password."
-            )
-          }
-        )
-      )
-
-    } else {
-
-      main_dashboard_ui()
-
-    }
-
-  })
-
+})
 
   # =========================
   # LOGIN
   # =========================
+observeEvent(input$login_button, {
 
-  observeEvent(input$login_button, {
+  username <- Sys.getenv("APP_USERNAME")
+  password <- Sys.getenv("APP_PASSWORD")
 
-    username <- Sys.getenv("APP_USERNAME")
-    password <- Sys.getenv("APP_PASSWORD")
+  if (
+    nzchar(username) &&
+    nzchar(password) &&
+    identical(input$login_username, username) &&
+    identical(input$login_password, password)
+  ) {
 
-    if (
-      nzchar(username) &&
-      nzchar(password) &&
-      identical(input$login_username, username) &&
-      identical(input$login_password, password)
-    ) {
+    login_failed(FALSE)
+    authenticated(TRUE)
 
-      login_failed(FALSE)
-      authenticated(TRUE)
+    shinyjs::hide("login_container")
+    shinyjs::show("dashboard_container")
 
-    } else {
+  } else {
 
-      login_failed(TRUE)
+    login_failed(TRUE)
 
-    }
+  }
 
-  })
+})
+
+output$sidebar_filters <- renderUI({
+
+  req(authenticated())
+  req(input$tabs)
+
+  switch(
+    input$tabs,
+
+    "main_tab" =
+      mod_filters_ui("filters_summary"),
+
+    "expenses_tab" =
+      mod_filters_ui("filters_expense"),
+
+    "bank_tab" =
+      mod_filters_ui("filters_expense"),
+
+    "income_tab" =
+      mod_filters_ui("filters_income"),
+
+    "budget_tab" =
+      mod_filters_ui("filters_budget"),
+
+    "drop_down_tab" =
+      mod_filters_ui("filters_dropdown"),
+
+    NULL
+  )
+
+})
 
 
   # =========================
