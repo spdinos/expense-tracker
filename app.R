@@ -59,7 +59,3 @@ shinyApp(
 source("app_ui.r", local = TRUE)
 source("app_server.r", local = TRUE)
 
-shinyApp(
-  ui = ui,
-  server = server
-)

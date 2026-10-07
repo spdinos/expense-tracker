@@ -24,6 +24,9 @@ excluded_categories <- c(
   "Αποταμίευση"
 )
 
+
+
+
 output$total_expenses <- renderValueBox({
 
   df <- monthly_df()
@@ -46,6 +49,250 @@ output$total_expenses <- renderValueBox({
   )
 })
 
+output$total_income <- renderValueBox({
+  total <- sum(monthly_df()$Amount[monthly_df()$`Primary Category`  %in% excluded_categories], na.rm = TRUE)
+  valueBox(paste0("€", format(total, big.mark = ",")), "Total Income", icon = icon("coins"), color = "olive")
+})
+
+output$total_savings <- renderValueBox({
+  total <- sum(savings_comparison()$`Actual savings`, na.rm = TRUE)
+  valueBox(paste0("€", format(total, big.mark = ",")), "Total Savings", icon = icon("coins"), color = "green")
+})
+
+output$total_investment_gain <- renderValueBox({
+
+  df <- financial_assets() %>% arrange(Year, Month_num)
+
+  gain_for <- function(balance, additions, sales) {
+    idx <- which(!is.na(balance))
+    if (length(idx) < 2) return(0)
+
+    first <- min(idx)
+    last_i <- max(idx)
+    flows <- (first + 1):last_i
+
+    balance[last_i] - balance[first] -
+      sum(additions[flows], na.rm = TRUE) +
+      sum(sales[flows],     na.rm = TRUE)
+  }
+
+  total <-
+    gain_for(df$`Investment accounts`, df$`Investment additions`, df$`Investment sales`) +
+    gain_for(df$`Stock market`,        df$`Stock additions`,      df$`Stock sales`)
+
+  valueBox(
+    paste0("€", format(round(total), big.mark = ","), ""),
+    "Total Investment gains",
+    icon  = icon("coins"),
+    color = "orange"
+  )
+})
+
+output$total_investment <- renderValueBox({
+
+  df <- savings_df() %>%
+        filter(`Primary Category` == "Αποταμίευση" & !is.na(`Bank balance`) & `Secondary Category` == "Επενδυτικό") %>%
+        group_by(Year, Month_num) %>%
+        summarize(total_investment = sum(`Bank balance`, na.rm = TRUE)) %>%
+        arrange(Year, Month_num)
+
+  total_investment <- last(df$total_investment)
+
+  valueBox(paste0("€", format(total_investment, big.mark = ",")), "Invest Balance", icon = icon("university"), color = "aqua")
+})
+
+output$bank_balance <- renderValueBox({
+
+  latest_int <- monthly_df() %>% 
+                filter(!is.na(`Bank balance`)) %>%
+                group_by(Year, Month, Month_num, `Primary Category`) %>%
+                summarize(`Bank balance` = sum(`Bank balance`, na.rm = TRUE)) %>%
+                arrange(Year, Month_num)
+  latest <-  tail(latest_int$`Bank balance`, 1)
+  valueBox(paste0("€", format(latest, big.mark = ",")), "Bank Balance", icon = icon("university"), color = "aqua")
+})
+
+output$total_bank_gain <- renderValueBox({
+
+df <- savings_df() %>% 
+        filter(!is.na(`Bank balance`)) %>%
+        group_by(Year, Month_num) %>%
+        summarize(`Bank balance` = sum(`Bank balance`, na.rm = TRUE), .groups = "drop") %>%
+        arrange(Year, Month_num) %>%
+        mutate(
+            bank_gain = round(`Bank balance` - lag(`Bank balance`),2)
+        ) %>%
+        arrange(Year, Month_num) %>%
+        group_by(Year) %>%
+        summarize(bank_gain = sum(bank_gain, na.rm = TRUE), .groups = "drop") %>%
+        arrange(Year)
+
+  total_bank_gain <- last(df$bank_gain)
+
+  valueBox(paste0("€", format(total_bank_gain, big.mark = ",")), "Total bank gain", icon = icon("university"), color = "orange")
+})
+
+output$total_stock_gain <- renderValueBox({
+
+df <- savings_outcome %>% 
+filter(
+    `Primary Category` == "Αποταμίευση",
+    grepl("Χρηματιστ",`Secondary Category`)
+  ) %>%
+  
+  group_by(Year, Month_num) %>%
+  
+  summarize(
+    total_invested = sum(
+      Amount[`Secondary Category` == "Χρηματιστήριο"],
+      na.rm = TRUE
+    ),
+    
+    total_invested_sell = sum(
+      Amount[grepl("Πώληση Χρηματιστηρίου", `Secondary Category`)],
+      na.rm = TRUE
+    ),
+    
+    total_invest_balance = sum(
+      `Bank balance`[`Secondary Category` == "Χρηματιστήριο"],
+      na.rm = TRUE
+    ),
+    
+    .groups = "drop"
+  ) %>%
+  arrange(Year, Month_num) %>%
+  
+  mutate(
+    total_invested_sell = cumsum(total_invested_sell),
+    total_invested = cumsum(total_invested),
+    
+    total_invested_amount =
+      total_invested - total_invested_sell,
+    
+    total_invest_gains =
+      round(
+        total_invest_balance - total_invested_amount,
+        2
+      )
+  )
+  selected_data <- savings_df() %>% filter(`Primary Category` == "Αποταμίευση")
+
+latest_selected_date <- selected_data %>%
+  transmute(
+    Year = as.numeric(Year),
+    Month_num = as.numeric(Month_num)
+  ) %>%
+  arrange(Year, Month_num) %>%
+  slice_tail(n = 1)
+
+
+latest_gains <- df %>%
+  mutate(
+    Year = as.numeric(Year),
+    Month_num = as.numeric(Month_num)
+  ) %>%
+  filter(
+    Year == latest_selected_date$Year,
+    Month_num == latest_selected_date$Month_num
+  ) %>%
+  pull(total_invest_gains)
+
+
+  valueBox(
+    paste0("€", format(round(latest_gains), big.mark = ","), ""),
+    "Total stock gains",
+    icon  = icon("coins"),
+    color = "orange"
+  )
+})
+
+output$total_investment_gain <- renderValueBox({
+
+df <- savings_outcome %>% 
+  filter(
+    `Primary Category` == "Αποταμίευση",
+    `Secondary Category` != "Τραπεζικοί Λογαριασμοί"
+  ) %>%
+  
+  group_by(Year, Month_num) %>%
+  
+  summarize(
+    total_invested = sum(
+      Amount[`Secondary Category` == "Επενδυτικό"],
+      na.rm = TRUE
+    ),
+    
+    total_invested_sell = sum(
+      Amount[grepl("Πώληση Επενδυτικού", `Secondary Category`)],
+      na.rm = TRUE
+    ),
+    
+    total_invest_balance = sum(
+      `Bank balance`[`Secondary Category` == "Επενδυτικό"],
+      na.rm = TRUE
+    ),
+    
+    .groups = "drop"
+  ) %>%
+  
+  arrange(Year, Month_num) %>%
+  
+  mutate(
+    total_invested_sell = cumsum(total_invested_sell),
+    total_invested = cumsum(total_invested),
+    
+    total_invested_amount =
+      total_invested - total_invested_sell,
+    
+    total_invest_gains =
+      round(
+        total_invest_balance - total_invested_amount,
+        2
+      )
+  )
+  selected_data <- savings_df() %>% filter(`Primary Category` == "Αποταμίευση")
+
+latest_selected_date <- selected_data %>%
+  transmute(
+    Year = as.numeric(Year),
+    Month_num = as.numeric(Month_num)
+  ) %>%
+  arrange(Year, Month_num) %>%
+  slice_tail(n = 1)
+
+
+latest_gains <- df %>%
+  mutate(
+    Year = as.numeric(Year),
+    Month_num = as.numeric(Month_num)
+  ) %>%
+  filter(
+    Year == latest_selected_date$Year,
+    Month_num == latest_selected_date$Month_num
+  ) %>%
+  pull(total_invest_gains)
+
+
+  valueBox(
+    paste0("€", format(round(latest_gains), big.mark = ","), ""),
+    "Total Investment gains",
+    icon  = icon("coins"),
+    color = "orange"
+  )
+})
+
+output$total_stock <- renderValueBox({
+
+  df <- savings_df() %>%
+        filter(`Primary Category` == "Αποταμίευση" & !is.na(`Bank balance`) & `Secondary Category` == "Χρηματιστήριο") %>%
+        group_by(Year, Month_num) %>%
+        summarize(total_stock = sum(`Bank balance`, na.rm = TRUE)) %>%
+        arrange(Year, Month_num)
+
+  total_stock <- last(df$total_stock)
+
+  valueBox(paste0("€", format(total_stock, big.mark = ",")), "Stock Balance", icon = icon("university"), color = "aqua")
+})
 
 expense_vs_budget <- reactive({
   req(input$theme)
@@ -1365,239 +1612,6 @@ savings_comparison <- reactive({
         `Theoretical savings`
     )
 
-})
-
-
-output$total_income <- renderValueBox({
-  total <- sum(monthly_df()$Amount[monthly_df()$`Primary Category`  %in% excluded_categories], na.rm = TRUE)
-  valueBox(paste0("€", format(total, big.mark = ",")), "Total Income", icon = icon("coins"), color = "green")
-})
-
-output$total_savings <- renderValueBox({
-  total <- sum(savings_comparison()$`Actual savings`, na.rm = TRUE)
-  valueBox(paste0("€", format(total, big.mark = ",")), "Total Savings", icon = icon("coins"), color = "green")
-})
-
-output$total_investment_gain <- renderValueBox({
-
-  df <- financial_assets() %>% arrange(Year, Month_num)
-
-  gain_for <- function(balance, additions, sales) {
-    idx <- which(!is.na(balance))
-    if (length(idx) < 2) return(0)
-
-    first <- min(idx)
-    last_i <- max(idx)
-    flows <- (first + 1):last_i
-
-    balance[last_i] - balance[first] -
-      sum(additions[flows], na.rm = TRUE) +
-      sum(sales[flows],     na.rm = TRUE)
-  }
-
-  total <-
-    gain_for(df$`Investment accounts`, df$`Investment additions`, df$`Investment sales`) +
-    gain_for(df$`Stock market`,        df$`Stock additions`,      df$`Stock sales`)
-
-  valueBox(
-    paste0("€", format(round(total), big.mark = ","), ""),
-    "Total Investment gains",
-    icon  = icon("coins"),
-    color = "green"
-  )
-})
-
-output$bank_balance <- renderValueBox({
-
-  latest_int <- monthly_df() %>% 
-                filter(!is.na(`Bank balance`)) %>%
-                group_by(Year, Month, Month_num, `Primary Category`) %>%
-                summarize(`Bank balance` = sum(`Bank balance`, na.rm = TRUE)) %>%
-                arrange(Year, Month_num)
-  latest <-  tail(latest_int$`Bank balance`, 1)
-  valueBox(paste0("€", format(latest, big.mark = ",")), "Bank Balance", icon = icon("university"), color = "blue")
-})
-
-output$total_bank_gain <- renderValueBox({
-
-df <- savings_df() %>% 
-        filter(!is.na(`Bank balance`)) %>%
-        group_by(Year, Month_num) %>%
-        summarize(`Bank balance` = sum(`Bank balance`, na.rm = TRUE), .groups = "drop") %>%
-        arrange(Year, Month_num) %>%
-        mutate(
-            bank_gain = round(`Bank balance` - lag(`Bank balance`),2)
-        ) %>%
-        arrange(Year, Month_num) %>%
-        group_by(Year) %>%
-        summarize(bank_gain = sum(bank_gain, na.rm = TRUE), .groups = "drop") %>%
-        arrange(Year)
-
-  total_bank_gain <- last(df$bank_gain)
-
-  valueBox(paste0("€", format(total_bank_gain, big.mark = ",")), "Total bank gain", icon = icon("university"), color = "blue")
-})
-
-output$total_stock_gain <- renderValueBox({
-
-df <- savings_outcome %>% 
-filter(
-    `Primary Category` == "Αποταμίευση",
-    grepl("Χρηματιστ",`Secondary Category`)
-  ) %>%
-  
-  group_by(Year, Month_num) %>%
-  
-  summarize(
-    total_invested = sum(
-      Amount[`Secondary Category` == "Χρηματιστήριο"],
-      na.rm = TRUE
-    ),
-    
-    total_invested_sell = sum(
-      Amount[grepl("Πώληση Χρηματιστηρίου", `Secondary Category`)],
-      na.rm = TRUE
-    ),
-    
-    total_invest_balance = sum(
-      `Bank balance`[`Secondary Category` == "Χρηματιστήριο"],
-      na.rm = TRUE
-    ),
-    
-    .groups = "drop"
-  ) %>%
-  arrange(Year, Month_num) %>%
-  
-  mutate(
-    total_invested_sell = cumsum(total_invested_sell),
-    total_invested = cumsum(total_invested),
-    
-    total_invested_amount =
-      total_invested - total_invested_sell,
-    
-    total_invest_gains =
-      round(
-        total_invest_balance - total_invested_amount,
-        2
-      )
-  )
-  selected_data <- savings_df() %>% filter(`Primary Category` == "Αποταμίευση")
-
-latest_selected_date <- selected_data %>%
-  transmute(
-    Year = as.numeric(Year),
-    Month_num = as.numeric(Month_num)
-  ) %>%
-  arrange(Year, Month_num) %>%
-  slice_tail(n = 1)
-
-
-latest_gains <- df %>%
-  mutate(
-    Year = as.numeric(Year),
-    Month_num = as.numeric(Month_num)
-  ) %>%
-  filter(
-    Year == latest_selected_date$Year,
-    Month_num == latest_selected_date$Month_num
-  ) %>%
-  pull(total_invest_gains)
-
-
-  valueBox(
-    paste0("€", format(round(latest_gains), big.mark = ","), ""),
-    "Total stock gains",
-    icon  = icon("coins"),
-    color = "green"
-  )
-})
-
-output$total_investment_gain <- renderValueBox({
-
-df <- savings_outcome %>% 
-  filter(
-    `Primary Category` == "Αποταμίευση",
-    `Secondary Category` != "Τραπεζικοί Λογαριασμοί"
-  ) %>%
-  
-  group_by(Year, Month_num) %>%
-  
-  summarize(
-    total_invested = sum(
-      Amount[`Secondary Category` == "Επενδυτικό"],
-      na.rm = TRUE
-    ),
-    
-    total_invested_sell = sum(
-      Amount[grepl("Πώληση Επενδυτικού", `Secondary Category`)],
-      na.rm = TRUE
-    ),
-    
-    total_invest_balance = sum(
-      `Bank balance`[`Secondary Category` == "Επενδυτικό"],
-      na.rm = TRUE
-    ),
-    
-    .groups = "drop"
-  ) %>%
-  
-  arrange(Year, Month_num) %>%
-  
-  mutate(
-    total_invested_sell = cumsum(total_invested_sell),
-    total_invested = cumsum(total_invested),
-    
-    total_invested_amount =
-      total_invested - total_invested_sell,
-    
-    total_invest_gains =
-      round(
-        total_invest_balance - total_invested_amount,
-        2
-      )
-  )
-  selected_data <- savings_df() %>% filter(`Primary Category` == "Αποταμίευση")
-
-latest_selected_date <- selected_data %>%
-  transmute(
-    Year = as.numeric(Year),
-    Month_num = as.numeric(Month_num)
-  ) %>%
-  arrange(Year, Month_num) %>%
-  slice_tail(n = 1)
-
-
-latest_gains <- df %>%
-  mutate(
-    Year = as.numeric(Year),
-    Month_num = as.numeric(Month_num)
-  ) %>%
-  filter(
-    Year == latest_selected_date$Year,
-    Month_num == latest_selected_date$Month_num
-  ) %>%
-  pull(total_invest_gains)
-
-
-  valueBox(
-    paste0("€", format(round(latest_gains), big.mark = ","), ""),
-    "Total Investment gains",
-    icon  = icon("coins"),
-    color = "green"
-  )
-})
-
-output$total_stock <- renderValueBox({
-
-  df <- savings_df() %>%
-        filter(`Primary Category` == "Αποταμίευση" & !is.na(`Bank balance`) & `Secondary Category` == "Χρηματιστήριο") %>%
-        group_by(Year, Month_num) %>%
-        summarize(total_stock = sum(`Bank balance`, na.rm = TRUE)) %>%
-        arrange(Year, Month_num)
-
-  total_stock <- last(df$total_stock)
-
-  valueBox(paste0("€", format(total_stock, big.mark = ",")), "Stock Balance", icon = icon("university"), color = "blue")
 })
 
 
