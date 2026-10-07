@@ -47,11 +47,6 @@ source("modules/budget/mod_budget_server.r")
 source("app_ui.r", local = TRUE)
 source("app_server.r", local = TRUE)
 
-shinyApp(
-  ui = ui,
-  server = server
-)
-
 # =========================
 # UI / SERVER
 # =========================
@@ -59,3 +54,8 @@ shinyApp(
 source("app_ui.r", local = TRUE)
 source("app_server.r", local = TRUE)
 
+
+shinyApp(
+  ui = ui,
+  server = server
+)
