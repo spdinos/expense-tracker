@@ -9,8 +9,11 @@ mod_main_ui <- function(id) {
         valueBoxOutput(ns("total_income")),
         valueBoxOutput(ns("bank_balance")),
         valueBoxOutput(ns("total_savings")),
+        valueBoxOutput(ns("total_investment")),
+        valueBoxOutput(ns("total_stock")),
         valueBoxOutput(ns("total_investment_gain")),
-        valueBoxOutput(ns("total_budget"))
+        valueBoxOutput(ns("total_stock_gain")),
+        valueBoxOutput(ns("total_bank_gain"))
       ),
     br(),
 
