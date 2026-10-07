@@ -20,82 +20,94 @@ main_dashboard_ui <- function() {
       )
     ),
 
-    dashboardSidebar(
+dashboardSidebar(
 
-      sidebarMenu(
+  width = 300,
 
-        id = "tabs",
+  sidebarMenu(
 
-        menuItem(
-          "Main",
-          tabName = "main_tab",
-          icon = icon("dashboard")
-        ),
+    id = "tabs",
 
-        menuItem(
-          "Expenses",
-          tabName = "expenses_tab",
-          icon = icon("list-check")
-        ),
-
-        menuItem(
-          "Income",
-          tabName = "income_tab",
-          icon = icon("list-check")
-        ),
-
-        menuItem(
-          "Budget",
-          tabName = "budget_tab",
-          icon = icon("list-check")
-        ),
-
-        menuItem(
-          "Bank balance",
-          tabName = "bank_tab",
-          icon = icon("list-check")
-        ),
-
-        menuItem(
-          "Drop down",
-          tabName = "drop_down_tab",
-          icon = icon("chart-bar")
-        ),
-
-        conditionalPanel(
-          condition =
-            "input.tabs == 'bank_tab' | input.tabs == 'expenses_tab'",
-
-          mod_filters_ui("filters_expense")
-        ),
-
-        conditionalPanel(
-          condition = "input.tabs == 'income_tab'",
-
-          mod_filters_ui("filters_income")
-        ),
-
-        conditionalPanel(
-          condition = "input.tabs == 'budget_tab'",
-
-          mod_filters_ui("filters_budget")
-        ),
-
-        conditionalPanel(
-          condition = "input.tabs == 'drop_down_tab'",
-
-          mod_filters_ui("filters_dropdown")
-        ),
-
-        conditionalPanel(
-          condition = "input.tabs == 'main_tab'",
-
-          mod_filters_ui("filters_summary")
-        )
-      ),
-
-      width = 300
+    menuItem(
+      "Main",
+      tabName = "main_tab",
+      icon = icon("dashboard")
     ),
+
+    menuItem(
+      "Expenses",
+      tabName = "expenses_tab",
+      icon = icon("list-check")
+    ),
+
+    menuItem(
+      "Income",
+      tabName = "income_tab",
+      icon = icon("list-check")
+    ),
+
+    menuItem(
+      "Budget",
+      tabName = "budget_tab",
+      icon = icon("list-check")
+    ),
+
+    menuItem(
+      "Bank balance",
+      tabName = "bank_tab",
+      icon = icon("list-check")
+    ),
+
+    menuItem(
+      "Drop down",
+      tabName = "drop_down_tab",
+      icon = icon("chart-bar")
+    )
+  ),
+
+  # =========================
+  # FILTERS
+  # =========================
+
+  div(
+    class = "sidebar-filters",
+
+    conditionalPanel(
+      condition =
+        "input.tabs == 'bank_tab' || input.tabs == 'expenses_tab'",
+
+      mod_filters_ui("filters_expense")
+    ),
+
+    conditionalPanel(
+      condition =
+        "input.tabs == 'income_tab'",
+
+      mod_filters_ui("filters_income")
+    ),
+
+    conditionalPanel(
+      condition =
+        "input.tabs == 'budget_tab'",
+
+      mod_filters_ui("filters_budget")
+    ),
+
+    conditionalPanel(
+      condition =
+        "input.tabs == 'drop_down_tab'",
+
+      mod_filters_ui("filters_dropdown")
+    ),
+
+    conditionalPanel(
+      condition =
+        "input.tabs == 'main_tab'",
+
+      mod_filters_ui("filters_summary")
+    )
+  )
+),
 
     dashboardBody(
 

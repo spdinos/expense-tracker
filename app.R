@@ -18,7 +18,6 @@ library(ggtext)
 library(jsonlite)
 library(rlang)
 
-
 source("formulas/formula.r")
 
 result <- get_data()
