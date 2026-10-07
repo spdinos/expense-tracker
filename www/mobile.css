@@ -151,10 +151,10 @@
 
 .financial-value-boxes {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 3px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
   margin-top: 3px;
-  margin-bottom: 3px;
+  margin-bottom: 6px;
   width: 100%;
 }
 
@@ -214,12 +214,20 @@
 
 @media (max-width: 400px) {
 
+  .financial-value-boxes {
+    gap: 4px;
+  }
+
   .financial-value-boxes .small-box h3 {
     font-size: 17px !important;
   }
 
   .financial-value-boxes .small-box p {
     font-size: 11px !important;
+  }
+
+  .financial-value-boxes .small-box .icon {
+    font-size: 38px !important;
   }
 
 }
