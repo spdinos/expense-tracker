@@ -1,0 +1,225 @@
+/* =========================================================
+   MOBILE LAYOUT
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+  /* -------------------------
+     GENERAL
+     ------------------------- */
+
+  .content-wrapper,
+  .right-side {
+    margin-left: 0 !important;
+  }
+
+  .content {
+    padding: 8px !important;
+  }
+
+  .box {
+    margin-bottom: 10px !important;
+  }
+
+  .box-body {
+    padding: 8px !important;
+  }
+
+
+  /* -------------------------
+     HEADER
+     ------------------------- */
+
+  .main-header {
+    max-height: none !important;
+  }
+
+  .main-header .logo {
+    width: 100% !important;
+    height: 50px !important;
+    line-height: 50px !important;
+  }
+
+  .main-header .navbar {
+    margin-left: 0 !important;
+    min-height: 45px !important;
+  }
+
+
+  /* -------------------------
+     SIDEBAR
+     ------------------------- */
+
+  .main-sidebar {
+    padding-top: 95px !important;
+  }
+
+  .sidebar-filters {
+    padding: 10px !important;
+  }
+
+  .sidebar-filters .form-group {
+    width: 100% !important;
+    margin-bottom: 10px !important;
+  }
+
+  .sidebar-filters .selectize-control,
+  .sidebar-filters .selectize-input,
+  .sidebar-filters .form-control {
+    width: 100% !important;
+  }
+
+  /* -------------------------
+     TABS
+     ------------------------- */
+
+  .nav-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+
+    white-space: nowrap !important;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-tabs > li {
+    float: none !important;
+    flex: 0 0 auto !important;
+  }
+
+  .nav-tabs > li > a {
+    white-space: nowrap !important;
+    padding: 9px 12px !important;
+    font-size: 13px !important;
+  }
+
+
+  /* -------------------------
+     PLOTLY
+     ------------------------- */
+
+  .plotly,
+  .plot-container,
+  .js-plotly-plot {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+
+  /* -------------------------
+     TABLES
+     ------------------------- */
+
+  .dataTables_wrapper,
+  .reactable {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+
+
+  /* -------------------------
+     MODALS
+     ------------------------- */
+
+  .modal-dialog {
+    width: auto !important;
+    margin: 10px !important;
+  }
+
+  .modal-content {
+    width: 100% !important;
+  }
+
+
+  /* -------------------------
+     BUTTONS
+     ------------------------- */
+
+  .btn {
+    min-height: 38px;
+  }
+
+}
+
+/* ==========================================
+   FINANCIAL VALUE BOXES - DESKTOP
+   ========================================== */
+
+.financial-value-boxes {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  width: 100%;
+}
+
+.financial-value-boxes > div {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.financial-value-boxes .small-box {
+  width: 100% !important;
+  margin-bottom: 0 !important;
+}
+
+
+/* ==========================================
+   PHONE
+   ========================================== */
+
+@media (max-width: 767px) {
+
+  .financial-value-boxes {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .financial-value-boxes .small-box {
+    min-height: 95px !important;
+  }
+
+  .financial-value-boxes .small-box .inner {
+    padding: 8px !important;
+  }
+
+  .financial-value-boxes .small-box h3 {
+    font-size: 20px !important;
+    margin: 0 0 5px 0 !important;
+    white-space: nowrap;
+  }
+
+  .financial-value-boxes .small-box p {
+    font-size: 12px !important;
+    margin-bottom: 0 !important;
+  }
+
+  .financial-value-boxes .small-box .icon {
+    font-size: 45px !important;
+    top: 20px !important;
+    right: 8px !important;
+  }
+
+}
+
+
+/* ==========================================
+   VERY SMALL PHONE
+   ========================================== */
+
+@media (max-width: 400px) {
+
+  .financial-value-boxes .small-box h3 {
+    font-size: 17px !important;
+  }
+
+  .financial-value-boxes .small-box p {
+    font-size: 11px !important;
+  }
+
+}

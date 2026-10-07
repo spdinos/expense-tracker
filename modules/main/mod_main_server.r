@@ -463,7 +463,35 @@ plotly_plot <- ggplotly(
   source = "income_expense_plot"
 ) %>%
   layout(
-    hovermode = "closest"
+    hovermode = "closest",
+
+    autosize = TRUE,
+
+    margin = list(
+      l = 45,
+      r = 10,
+      b = 70,
+      t = 45
+    ),
+
+    xaxis = list(
+      automargin = TRUE
+    ),
+
+    yaxis = list(
+      automargin = TRUE
+    ),
+
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      xanchor = "center",
+      y = -0.2
+    )
+  ) %>%
+  config(
+    responsive = TRUE,
+    displayModeBar = FALSE
   )
 
 plotly_plot <- event_register(
@@ -2748,58 +2776,85 @@ plot_df <- df %>%
   )
 
   p <- ggplot(
+  plot_df,
+  aes(
+    x = Date,
+    y = Amount,
+    color = Parameter,
+    text = hover_text
+  )
+) +
 
-    plot_df,
-
-    aes(
-      x = Date,
-      y = Amount,
-      color = Parameter,
-      text = hover_text
-    )
-
+  geom_line(
+    linewidth = 1
   ) +
 
-    geom_line(
-      linewidth = 1
-    ) +
+  geom_point(
+    size = 2
+  ) +
 
-    geom_point(
-      size = 2
-    ) +
+  labs(
+    title = "Rolling 12-Month Financial Performance",
+    subtitle = "Each point represents the previous 12 months",
+    x = NULL,
+    y = "Amount (€)",
+    color = NULL
+  ) +
 
-    labs(
+  theme_minimal() +
 
-      title =
-        "Rolling 12-Month Financial Performance",
+  theme(
+    legend.position = "top",
 
-      subtitle =
-        "Each point represents the previous 12 months",
+    plot.title = element_text(
+      face = "bold"
+    ),
 
-      x = NULL,
-
-      y = "Amount (€)",
-
-      color = NULL
-    ) +
-
-    theme_minimal() +
-
-    theme(
-
-      legend.position =
-        "top",
-
-      plot.title =
-        element_text(
-          face = "bold"
-        )
+    axis.text.x = element_text(
+      angle = 0,
+      hjust = 0.5,
+      size = 8
     )
+  )
 
 
-  ggplotly(
-    p,
-    tooltip = "text"
+ggplotly(
+  p,
+  tooltip = "text"
+) %>%
+
+  layout(
+    autosize = TRUE,
+
+    margin = list(
+      l = 50,
+      r = 10,
+      b = 60,
+      t = 70
+    ),
+
+    xaxis = list(
+      automargin = TRUE
+    ),
+
+    yaxis = list(
+      automargin = TRUE
+    ),
+
+    legend = list(
+      orientation = "h",
+      x = 0.5,
+      xanchor = "center",
+      y = 1.08,
+      yanchor = "bottom"
+    ),
+
+    hovermode = "closest"
+  ) %>%
+
+  config(
+    responsive = TRUE,
+    displayModeBar = FALSE
   )
 })
 

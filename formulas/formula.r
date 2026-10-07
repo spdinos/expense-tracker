@@ -161,27 +161,59 @@ return(list(Income = Income,
               ))
 }
 
-bar_plot <- function(data, x, y, fill, title, key, source = "bar_plot") {
+bar_plot <- function(
+    data,
+    x,
+    y,
+    fill,
+    title,
+    key,
+    source = "bar_plot"
+) {
 
-  # Convert y to symbol (always one)
+  # =========================
+  # SYMBOLS
+  # =========================
+
   y_sym <- rlang::sym(y)
 
-  # For x, fill, key: if multiple, create a combined column
   if (length(x) > 1) {
-    data$..x <- interaction(data[, x], drop = TRUE)
+
+    data$..x <- interaction(
+      data[, x],
+      drop = TRUE
+    )
+
     x_aes <- rlang::sym("..x")
+
   } else {
+
     x_aes <- rlang::sym(x)
+
   }
 
   fill_aes <- rlang::sym(fill)
 
+
   if (length(key) > 1) {
-    data$..key <- interaction(data[, key], drop = TRUE)
+
+    data$..key <- interaction(
+      data[, key],
+      drop = TRUE
+    )
+
     key_aes <- rlang::sym("..key")
+
   } else {
+
     key_aes <- rlang::sym(key)
+
   }
+
+
+  # =========================
+  # GGPLOT
+  # =========================
 
   p <- ggplot(
     data,
@@ -193,78 +225,329 @@ bar_plot <- function(data, x, y, fill, title, key, source = "bar_plot") {
       key = !!key_aes
     )
   ) +
-    geom_bar(stat = "identity", position = "stack") +
-    geom_text(
-      aes(label = round(!!y_sym, 1)),
-      position = position_stack(vjust = 1.1),
-      size = 2,
-      angle = 45,
-      fontface = "bold"
-    ) 
-    if("Primary Category" %in% names(data)) {
-    
-    p <- p + facet_wrap(~ `Primary Category`, scales = "free_y")}
-    
-    
-    p <- p + theme_plot() +
-    labs(title = title, x = NULL, y = NULL) +
-    theme_minimal(base_size = 10) +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      legend.position = "bottom"
+
+    geom_bar(
+      stat = "identity",
+      position = "stack"
     )
 
-  # Register click events
-  ggplotly(p, source = source) %>% event_register("plotly_click")
+
+  # =========================
+  # FACET
+  # =========================
+
+  if ("Primary Category" %in% names(data)) {
+
+    p <- p +
+      facet_wrap(
+        ~ `Primary Category`,
+        scales = "free_y"
+      )
+
+  }
+
+
+  # =========================
+  # THEME
+  # =========================
+
+  p <- p +
+
+    labs(
+      title = title,
+      x = NULL,
+      y = NULL
+    ) +
+
+    theme_minimal(
+      base_size = 10
+    ) +
+
+    theme(
+
+      plot.title = element_text(
+        size = 13,
+        face = "bold"
+      ),
+
+      axis.text.x = element_text(
+        angle = 45,
+        hjust = 1,
+        size = 8
+      ),
+
+      axis.text.y = element_text(
+        size = 8
+      ),
+
+      legend.position = "bottom",
+
+      legend.text = element_text(
+        size = 8
+      ),
+
+      legend.title = element_text(
+        size = 9
+      ),
+
+      panel.spacing = unit(
+        5,
+        "pt"
+      ),
+
+      plot.margin = margin(
+        5,
+        5,
+        5,
+        5
+      )
+    )
+
+
+  # =========================
+  # PLOTLY
+  # =========================
+
+  p <- ggplotly(
+    p,
+    source = source,
+    tooltip = c(
+      "x",
+      "y",
+      "fill"
+    )
+  )
+
+
+  # =========================
+  # RESPONSIVE LAYOUT
+  # =========================
+
+  p <- p %>%
+
+    layout(
+
+      autosize = TRUE,
+
+      margin = list(
+        l = 45,
+        r = 10,
+        b = 70,
+        t = 45
+      ),
+
+      xaxis = list(
+        automargin = TRUE
+      ),
+
+      yaxis = list(
+        automargin = TRUE
+      ),
+
+      legend = list(
+        orientation = "h",
+        x = 0,
+        y = -0.2
+      )
+    ) %>%
+
+    config(
+      responsive = TRUE,
+      displayModeBar = FALSE
+    ) %>%
+
+    event_register(
+      "plotly_click"
+    )
+
+
+  p
 }
 
-
-
 # Create the plot
-scatter_plot <- function(data, x, y, z, title, data_labels = TRUE) {
-  
+scatter_plot <- function(
+    data,
+    x,
+    y,
+    z,
+    title,
+    data_labels = TRUE,
+    source = "scatter_plot"
+) {
+
+  # =========================
+  # SYMBOLS
+  # =========================
+
   x <- sym(deparse(substitute(x)))
   y <- sym(deparse(substitute(y)))
   z <- sym(deparse(substitute(z)))
 
-  p <- ggplot(data, aes(x = !!x, y = !!y)) +
-    geom_point(aes(color = !!z)) +
+  y_name <- as_string(y)
+
+
+  # =========================
+  # BASE PLOT
+  # =========================
+
+  p <- ggplot(
+    data,
+    aes(
+      x = !!x,
+      y = !!y,
+      color = !!z
+    )
+  ) +
+
+    geom_point(
+      size = 2
+    ) +
+
     geom_line(
+      aes(
+        group = !!z
+      ),
       linewidth = 0.8,
-      aes(group = !!z, color = !!z),
       linetype = "dotted"
     ) +
-    labs(title = title) +
-    theme_minimal() +
+
+    labs(
+      title = title,
+      x = NULL,
+      y = NULL
+    ) +
+
+    theme_minimal(
+      base_size = 10
+    ) +
+
     theme_plot() +
+
     theme(
-      axis.text.x = element_text(angle = 45, hjust = 1)
+
+      plot.title = element_text(
+        size = 13,
+        face = "bold"
+      ),
+
+      axis.text.x = element_text(
+        angle = 45,
+        hjust = 1,
+        size = 8
+      ),
+
+      axis.text.y = element_text(
+        size = 8
+      ),
+
+      legend.position = "bottom",
+
+      legend.text = element_text(
+        size = 8
+      ),
+
+      plot.margin = margin(
+        5,
+        5,
+        5,
+        5
+      )
     )
 
-  # Add labels only when requested
+
+  # =========================
+  # DATA LABELS
+  # =========================
+
   if (data_labels) {
-    
-    p <- p +
-      geom_text(
-        aes(label = round(!!y, 1)),
-        nudge_y = 0.02 * max(
-          data[[as_string(y)]],
-          na.rm = TRUE
-        ),
-        size = 3
-      )
+
+    y_values <- data[[y_name]]
+
+    y_values <- y_values[
+      !is.na(y_values) &
+      is.finite(y_values)
+    ]
+
+    if (length(y_values) > 0) {
+
+      y_range <- max(y_values) - min(y_values)
+
+      if (
+        !is.finite(y_range) ||
+        y_range == 0
+      ) {
+        y_range <- max(abs(y_values))
+
+        if (
+          !is.finite(y_range) ||
+          y_range == 0
+        ) {
+          y_range <- 1
+        }
+      }
+
+
+      p <- p +
+
+        geom_text(
+          aes(
+            label = round(!!y, 1)
+          ),
+          nudge_y = 0.02 * y_range,
+          size = 2.5,
+          show.legend = FALSE
+        )
+
+    }
+
   }
 
-  p <- ggplotly(p) %>%
+
+  # =========================
+  # PLOTLY
+  # =========================
+
+    p <- ggplotly(
+      p,
+      source = source,
+      tooltip = c("x", "y", "colour")
+    ) %>%
+
     layout(
+
+      autosize = TRUE,
+
+      margin = list(
+        l = 45,
+        r = 10,
+        b = 70,
+        t = 45
+      ),
+
+      xaxis = list(
+        automargin = TRUE
+      ),
+
+      yaxis = list(
+        automargin = TRUE
+      ),
+
       legend = list(
         orientation = "h",
         x = 0.5,
         xanchor = "center",
-        y = -0.1,
-        title = list(text = "")
+        y = -0.2,
+        title = list(
+          text = ""
+        )
       )
+    ) %>%
+
+    config(
+      responsive = TRUE,
+      displayModeBar = FALSE
     )
+
 
   p
 }

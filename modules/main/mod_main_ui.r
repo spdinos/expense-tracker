@@ -2,14 +2,16 @@ mod_main_ui <- function(id) {
   ns <- NS(id)
 
   tagList(
-    div(style = "display: flex; justify-content: space-between; gap: 3px; margin-top: 3px; margin-bottom: 3px;",
-      valueBoxOutput(ns("total_expenses")),
-      valueBoxOutput(ns("total_income")),
-      valueBoxOutput(ns("bank_balance")),
-      valueBoxOutput(ns("total_savings")),
-      valueBoxOutput(ns("total_investment_gain")),
-      valueBoxOutput(ns("total_budget"))
-    ),
+      div(
+        class = "financial-value-boxes",
+
+        valueBoxOutput(ns("total_expenses")),
+        valueBoxOutput(ns("total_income")),
+        valueBoxOutput(ns("bank_balance")),
+        valueBoxOutput(ns("total_savings")),
+        valueBoxOutput(ns("total_investment_gain")),
+        valueBoxOutput(ns("total_budget"))
+      ),
     br(),
 
     # Collapsible Financial Charts section
