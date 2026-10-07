@@ -250,37 +250,36 @@ output$income_vs_expense <- renderPlotly({
   # DATE VIEW
   # ----------------------------------------------------------
 
-  if (input$theme_inc_vs_exp == "Date") {
+if (input$theme_inc_vs_exp == "Date") {
 
-    df <- df %>%
-      group_by(Date) %>%
-      summarize(
+  df <- df %>%
+    group_by(Date) %>%
+    summarize(
 
-        Income = sum(
-          Amount[`Primary Category`  %in% income_categories],
-          na.rm = TRUE
-        ),
+      Income = sum(
+        Amount[
+          `Primary Category` %in% income_categories
+        ],
+        na.rm = TRUE
+      ),
 
-        Expense = sum(
-          Amount[!`Primary Category`  %in% excluded_categories],
-          na.rm = TRUE
-        ),
+      Expense = sum(
+        Amount[
+          !`Primary Category` %in% excluded_categories
+        ],
+        na.rm = TRUE
+      ),
 
-        `%Expense` = Amount[!`Primary Category`  %in% excluded_categories]/Expense,
+      .groups = "drop"
+    ) %>%
 
-        .groups = "drop"
-      ) %>%
-      mutate(
-        Difference = Income - Expense
-      )
+    mutate(
+      Difference = Income - Expense
+    )
 
-    x_par <- "Date"
+  x_par <- "Date"
 
-  # ----------------------------------------------------------
-  # YEAR VIEW
-  # ----------------------------------------------------------
-
-  } else {
+} else {
 
     df <- df %>%
       group_by(Year) %>%
