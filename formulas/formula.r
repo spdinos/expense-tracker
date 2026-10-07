@@ -24,15 +24,30 @@ empty_like <- function(df) {df[0, ]}
 
 connect_financial_db <- function() {
 
-  DBI::dbConnect(
-  RPostgres::Postgres(),
-  host = "aws-1-eu-central-1.pooler.supabase.com",
-  port = 5432,
-  dbname = "postgres",
-  user = "postgres.gcvpukeosfmicildrxsu",
-  password = Sys.getenv("SUPABASE_DB_PASSWORD"),
-  sslmode = "require"
-)
+  conn <- tryCatch({
+
+    DBI::dbConnect(
+      RPostgres::Postgres(),
+
+      host     = Sys.getenv("SUPABASE_HOST"),
+      port     = as.integer(Sys.getenv("SUPABASE_PORT")),
+      dbname   = Sys.getenv("SUPABASE_DB"),
+      user     = Sys.getenv("SUPABASE_USER"),
+      password = Sys.getenv("FINANCIAL_DB_PASSWORD"),
+      sslmode  = "require"
+    )
+
+  }, error = function(e) {
+
+    message(
+      "Database connection failed: ",
+      e$message
+    )
+
+    NULL
+  })
+
+  conn
 }
 
 get_data <- function(){
