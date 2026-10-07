@@ -346,7 +346,8 @@ output$sidebar_filters <- renderUI({
   mod_main_server(
     "main",
     filtered_monthly,
-    filtered_savings
+    filtered_savings,
+    savings_outcome
   )
 
 

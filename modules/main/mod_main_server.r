@@ -1,5 +1,5 @@
 
-mod_main_server <- function(id, monthly_df, savings_df) {
+mod_main_server <- function(id, monthly_df, savings_df, savings_outcome) {
   moduleServer(id, function(input, output, session) {
   ns <- NS(id)
 
