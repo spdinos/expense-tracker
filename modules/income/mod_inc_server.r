@@ -686,7 +686,6 @@ observeEvent(input$data_table_init_complete, {
         }
       }
     }
-
 save_logic <- function() {
 
   cat("Save Income to PostgreSQL:\n")
@@ -698,7 +697,6 @@ save_logic <- function() {
   # ============================================================
 
   conn <- connect_financial_db()
-
 
   if (is.null(conn)) {
     return()
@@ -784,6 +782,10 @@ save_logic <- function() {
   )
 
 
+  # ============================================================
+  # DATA.TABLE KEYS
+  # ============================================================
+
   data.table::setkey(
     database,
     ID
@@ -805,11 +807,13 @@ save_logic <- function() {
     by = "ID"
   )
 
+
   data_for_update_check <- dplyr::anti_join(
     data_to_check,
     new_rows_insert,
     by = "ID"
   )
+
 
   existing_rows <- data.table::fsetdiff(
     data_for_update_check,
@@ -817,19 +821,28 @@ save_logic <- function() {
   )
 
 
-  # PostgreSQL generates ID
+  # ============================================================
+  # REMOVE ID FROM NEW ROWS
+  #
+  # PostgreSQL generates the ID automatically
+  # ============================================================
+
   if ("ID" %in% names(new_rows_insert)) {
 
     new_rows_insert <- new_rows_insert %>%
-      select(-ID) %>%
-      distinct()
+      dplyr::select(-ID) %>%
+      dplyr::distinct()
 
   } else {
 
     new_rows_insert <- new_rows_insert %>%
-      distinct()
+      dplyr::distinct()
   }
 
+
+  # ============================================================
+  # DETERMINE DELETED ROWS
+  # ============================================================
 
   rows_to_delete <- as.data.frame(
     dplyr::anti_join(
@@ -838,6 +851,7 @@ save_logic <- function() {
       by = "ID"
     )
   )
+
 
   new_rows_insert <- as.data.frame(
     new_rows_insert
@@ -875,6 +889,7 @@ save_logic <- function() {
     "Income"
   )
 
+
   r_to_sql_map <- setNames(
     postgres_cols,
     gsub(
@@ -884,6 +899,10 @@ save_logic <- function() {
     )
   )
 
+
+  # ============================================================
+  # REQUIRED FIELDS
+  # ============================================================
 
   required_fields <- gsub(
     " ",
@@ -900,12 +919,16 @@ save_logic <- function() {
 
 
   # ============================================================
-  # TRANSACTION
+  # TRANSACTION FLAGS
   # ============================================================
 
   transaction_started <- FALSE
   transaction_committed <- FALSE
 
+
+  # ============================================================
+  # TRANSACTION
+  # ============================================================
 
   tryCatch({
 
@@ -929,14 +952,20 @@ save_logic <- function() {
         ]
 
 
-        # Check required fields
+        # ======================================================
+        # CHECK REQUIRED FIELDS
+        # ======================================================
+
         missing_fields <- required_fields[
           !required_fields %in% names(row) |
             sapply(
               row[required_fields],
               function(x) {
-                is.na(x) ||
-                  as.character(x) == ""
+
+                value <- x[[1]]
+
+                is.na(value) ||
+                  as.character(value) == ""
               }
             )
         ]
@@ -962,11 +991,41 @@ save_logic <- function() {
         }
 
 
-        # Convert R names back to PostgreSQL names
-        sql_colnames <- r_to_sql_map[
-          names(row)
-        ]
+        # ======================================================
+        # CONVERT R COLUMN NAMES BACK TO POSTGRESQL COLUMN NAMES
+        # ======================================================
 
+        sql_colnames <- unname(
+          r_to_sql_map[
+            names(row)
+          ]
+        )
+
+
+        # Safety check
+        if (any(is.na(sql_colnames))) {
+
+          bad_columns <- names(row)[
+            is.na(
+              r_to_sql_map[names(row)]
+            )
+          ]
+
+          stop(
+            paste(
+              "Unknown PostgreSQL columns:",
+              paste(
+                bad_columns,
+                collapse = ", "
+              )
+            )
+          )
+        }
+
+
+        # ======================================================
+        # BUILD COLUMN LIST
+        # ======================================================
 
         columns_sql <- paste(
           DBI::dbQuoteIdentifier(
@@ -977,6 +1036,11 @@ save_logic <- function() {
         )
 
 
+        # ======================================================
+        # BUILD POSITIONAL PARAMETERS
+        # $1, $2, $3...
+        # ======================================================
+
         placeholders <- paste(
           paste0(
             "$",
@@ -986,6 +1050,10 @@ save_logic <- function() {
         )
 
 
+        # ======================================================
+        # BUILD INSERT QUERY
+        # ======================================================
+
         insert_query <- paste0(
           'INSERT INTO "Income" (',
           columns_sql,
@@ -994,6 +1062,13 @@ save_logic <- function() {
           ') RETURNING "ID"'
         )
 
+
+        # ======================================================
+        # PREPARE PARAMETERS
+        #
+        # IMPORTANT:
+        # RPostgres positional parameters MUST NOT be named
+        # ======================================================
 
         params <- lapply(
           row,
@@ -1005,6 +1080,7 @@ save_logic <- function() {
               length(value) == 0 ||
               is.na(value)
             ) {
+
               return(NA)
             }
 
@@ -1012,6 +1088,14 @@ save_logic <- function() {
           }
         )
 
+
+        # CRITICAL FIX
+        params <- unname(params)
+
+
+        # ======================================================
+        # INSERT
+        # ======================================================
 
         new_id <- DBI::dbGetQuery(
           conn,
@@ -1045,9 +1129,11 @@ save_logic <- function() {
 
         key <- existing_rows$ID[i]
 
+
         database_row <- database[
           ID == key
         ]
+
 
         update_row <- existing_rows[
           i,
@@ -1056,22 +1142,49 @@ save_logic <- function() {
         ]
 
 
+        # ======================================================
+        # DETERMINE WHICH FIELDS ACTUALLY CHANGED
+        # ======================================================
+
         changed_fields <- c()
 
 
-        for (f in setdiff(
-          names(update_row),
-          "ID"
-        )) {
+        for (
+          f in setdiff(
+            names(update_row),
+            "ID"
+          )
+        ) {
 
-          new_val <- update_row[[f]]
-          old_val <- database_row[[f]]
+          new_val <- update_row[[f]][1]
+          old_val <- database_row[[f]][1]
 
 
-          if (!identical(
-            new_val,
-            old_val
-          )) {
+          # Handle NA correctly
+          values_equal <- if (
+            is.na(new_val) &&
+            is.na(old_val)
+          ) {
+
+            TRUE
+
+          } else if (
+            is.na(new_val) ||
+            is.na(old_val)
+          ) {
+
+            FALSE
+
+          } else {
+
+            identical(
+              new_val,
+              old_val
+            )
+          }
+
+
+          if (!values_equal) {
 
             changed_fields <- c(
               changed_fields,
@@ -1081,16 +1194,39 @@ save_logic <- function() {
         }
 
 
+        # ======================================================
+        # UPDATE ONLY IF SOMETHING CHANGED
+        # ======================================================
+
         if (length(changed_fields) > 0) {
+
+
+          # ====================================================
+          # BUILD SET CLAUSE
+          # ====================================================
 
           set_clause <- paste(
             vapply(
               seq_along(changed_fields),
               function(j) {
 
-                sql_col <- r_to_sql_map[
-                  changed_fields[j]
-                ]
+                sql_col <- unname(
+                  r_to_sql_map[
+                    changed_fields[j]
+                  ]
+                )
+
+
+                if (is.na(sql_col)) {
+
+                  stop(
+                    paste(
+                      "Unknown PostgreSQL column:",
+                      changed_fields[j]
+                    )
+                  )
+                }
+
 
                 paste0(
                   DBI::dbQuoteIdentifier(
@@ -1107,6 +1243,10 @@ save_logic <- function() {
           )
 
 
+          # ====================================================
+          # BUILD UPDATE QUERY
+          # ====================================================
+
           update_query <- paste0(
             'UPDATE "Income" SET ',
             set_clause,
@@ -1115,24 +1255,32 @@ save_logic <- function() {
           )
 
 
+          # ====================================================
+          # PREPARE UPDATE PARAMETERS
+          # ====================================================
+
           params <- lapply(
             changed_fields,
             function(f) {
 
-              value <- update_row[[f]]
+              value <- update_row[[f]][1]
+
 
               if (
                 length(value) == 0 ||
                 is.na(value)
               ) {
+
                 return(NA)
               }
+
 
               value
             }
           )
 
 
+          # Add ID as final positional parameter
           params <- c(
             params,
             list(
@@ -1141,10 +1289,25 @@ save_logic <- function() {
           )
 
 
+          # CRITICAL FIX
+          params <- unname(params)
+
+
+          # ====================================================
+          # EXECUTE UPDATE
+          # ====================================================
+
           DBI::dbExecute(
             conn,
             update_query,
             params = params
+          )
+
+
+          cat(
+            "Updated Income ID:",
+            as.character(key),
+            "\n"
           )
         }
       }
@@ -1158,7 +1321,7 @@ save_logic <- function() {
 
 
     # ==========================================================
-    # DELETE
+    # DELETE ROWS
     # ==========================================================
 
     if (nrow(rows_to_delete) > 0) {
@@ -1168,39 +1331,80 @@ save_logic <- function() {
       )
 
 
-      placeholders <- paste(
-        paste0(
-          "$",
-          seq_along(ids)
-        ),
-        collapse = ", "
-      )
+      # Remove invalid IDs
+      ids <- ids[
+        !is.na(ids)
+      ]
 
 
-      delete_query <- paste0(
-        'DELETE FROM "Income" ',
-        'WHERE "ID" IN (',
-        placeholders,
-        ")"
-      )
+      if (length(ids) > 0) {
 
 
-      DBI::dbExecute(
-        conn,
-        delete_query,
-        params = as.list(ids)
-      )
+        # ======================================================
+        # BUILD POSITIONAL PARAMETERS
+        # ======================================================
+
+        placeholders <- paste(
+          paste0(
+            "$",
+            seq_along(ids)
+          ),
+          collapse = ", "
+        )
 
 
-      showNotification(
-        "✅ Rows deleted successfully.",
-        type = "message"
-      )
+        # ======================================================
+        # BUILD DELETE QUERY
+        # ======================================================
+
+        delete_query <- paste0(
+          'DELETE FROM "Income" ',
+          'WHERE "ID" IN (',
+          placeholders,
+          ")"
+        )
+
+
+        # ======================================================
+        # PREPARE DELETE PARAMETERS
+        # ======================================================
+
+        params <- unname(
+          as.list(ids)
+        )
+
+
+        # ======================================================
+        # DELETE
+        # ======================================================
+
+        DBI::dbExecute(
+          conn,
+          delete_query,
+          params = params
+        )
+
+
+        cat(
+          "Deleted Income IDs:",
+          paste(
+            ids,
+            collapse = ", "
+          ),
+          "\n"
+        )
+
+
+        showNotification(
+          "✅ Rows deleted successfully.",
+          type = "message"
+        )
+      }
     }
 
 
     # ==========================================================
-    # COMMIT
+    # COMMIT TRANSACTION
     # ==========================================================
 
     DBI::dbCommit(conn)
@@ -1209,7 +1413,7 @@ save_logic <- function() {
 
 
     # ==========================================================
-    # REFRESH DATA
+    # REFRESH DATA FROM POSTGRESQL
     # ==========================================================
 
     latest_data <- DBI::dbReadTable(
@@ -1218,12 +1422,20 @@ save_logic <- function() {
     )
 
 
+    # ==========================================================
+    # RESTORE R COLUMN NAMES
+    # ==========================================================
+
     names(latest_data) <- gsub(
       "\\.",
       " ",
       names(latest_data)
     )
 
+
+    # ==========================================================
+    # RESTORE DATE
+    # ==========================================================
 
     latest_data <- latest_data %>%
       mutate(
@@ -1234,12 +1446,20 @@ save_logic <- function() {
       )
 
 
+    # ==========================================================
+    # UPDATE REACTIVE DATA
+    # ==========================================================
+
     request_input(
       data.table::as.data.table(
         latest_data
       )
     )
 
+
+    # ==========================================================
+    # SUCCESS MESSAGE
+    # ==========================================================
 
     showModal(
       modalDialog(
@@ -1268,6 +1488,10 @@ save_logic <- function() {
     }
 
 
+    # ==========================================================
+    # ERROR MESSAGE
+    # ==========================================================
+
     showModal(
       modalDialog(
         title = "Error",
@@ -1290,6 +1514,11 @@ save_logic <- function() {
 
   }, finally = {
 
+
+    # ==========================================================
+    # DISCONNECT
+    # ==========================================================
+
     if (!is.null(conn)) {
 
       try(
@@ -1301,7 +1530,7 @@ save_logic <- function() {
 
 
   # ============================================================
-  # RESET TRACKING
+  # RESET TRACKING TABLES
   # ============================================================
 
   rows_to_store(
@@ -1310,11 +1539,13 @@ save_logic <- function() {
     )
   )
 
+
   changes_to_store(
     empty_like(
       request_input()
     )
   )
+
 
   deleted_rows_to_store(
     empty_like(

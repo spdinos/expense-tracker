@@ -18,6 +18,8 @@ library(ggtext)
 library(jsonlite)
 library(rlang)
 
+path <- "C:/path/Expense tracker cloud"
+setwd(path)
 source("formulas/formula.r")
 
 result <- get_data()
