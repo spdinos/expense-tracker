@@ -175,7 +175,6 @@ filter(
       )
   )
   selected_data <- savings_df() %>% filter(`Primary Category` == "Αποταμίευση")
-View(df)
 latest_selected_date <- selected_data %>%
   transmute(
     Year = as.numeric(Year),
@@ -184,7 +183,6 @@ latest_selected_date <- selected_data %>%
   arrange(Year, Month_num) %>%
   slice_tail(n = 1)
 
-View(latest_selected_date)
 latest_gains <- df %>%
   mutate(
     Year = as.numeric(Year),
@@ -196,7 +194,6 @@ latest_gains <- df %>%
   ) %>%
   pull(total_invest_gains)
 
-View(latest_gains)
   valueBox(
     paste0("€", format(round(latest_gains), big.mark = ","), ""),
     "Total stock gains",
