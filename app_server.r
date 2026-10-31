@@ -377,7 +377,8 @@ output$sidebar_filters <- renderUI({
   mod_bank_server(
     "bank",
     bank_df,
-    filtered_bank
+    filtered_bank,
+    dropdown_df
   )
 
 

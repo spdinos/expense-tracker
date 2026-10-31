@@ -21,7 +21,6 @@ library(rlang)
 source("formulas/formula.r")
 
 result <- get_data()
-
 expenses <- as.data.table(result$Expenses)
 budget <- as.data.table(result$Budget)
 dropdown_df  <- as.data.table(result$Dropdown)
@@ -46,14 +45,6 @@ source("modules/budget/mod_budget_ui.r")
 source("modules/budget/mod_budget_server.r")
 source("app_ui.r", local = TRUE)
 source("app_server.r", local = TRUE)
-
-# =========================
-# UI / SERVER
-# =========================
-
-source("app_ui.r", local = TRUE)
-source("app_server.r", local = TRUE)
-
 
 shinyApp(
   ui = ui,
