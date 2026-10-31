@@ -194,6 +194,44 @@ latest_gains <- df %>%
   ) %>%
   pull(total_invest_gains)
 
+cat("\n========== STOCK GAIN CHECK ==========\n")
+
+cat("\n1. Source data:\n")
+cat("Rows:", nrow(savings_outcome), "\n")
+
+cat("\n2. Monthly calculations:\n")
+
+print(
+  df %>%
+    select(
+      Year,
+      Month_num,
+      total_invested,
+      total_invested_sell,
+      total_invested_amount,
+      total_invest_balance,
+      total_invest_gains
+    )
+)
+
+cat("\n3. Latest selected date:\n")
+print(latest_selected_date)
+
+cat("\n4. Latest gains:\n")
+print(latest_gains)
+
+cat("\n5. Data types:\n")
+str(savings_outcome[, c(
+  "Year",
+  "Month_num",
+  "Amount",
+  "Bank balance",
+  "Primary Category",
+  "Secondary Category"
+)])
+
+cat("\n======================================\n")
+
   valueBox(
     paste0("€", format(round(latest_gains), big.mark = ","), ""),
     "Total stock gains",
